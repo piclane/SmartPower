@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_SCHEMA:sp}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD}
+    hikari:
+      auto-commit: false
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 1GB
+server:
+  port: ${PORT:8080}
+logging:
+  level:
+    com.xxuz.piclane.smartpower.sk: debug
+    org.apache.coyote.http11: warn
+graphql:
+  servlet:
+    corsEnabled: true
+    cors:
+      allowed-origins: "*"
+      allowed-headers: "*"
+      allowed-methods: "*"
+    actuator-metrics: true
+    mapping: /api/graphql
+    subscriptions:
+      websocket:
+        path: /api/subscriptions

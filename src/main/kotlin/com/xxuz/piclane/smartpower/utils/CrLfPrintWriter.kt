@@ -7,6 +7,7 @@ class CrLfPrintWriter(out: Writer) : PrintWriter(out) {
     override fun println() {
         synchronized(this.lock) {
             write("\r\n")
+            out.flush()
         }
     }
 }
