@@ -2,6 +2,7 @@ package com.xxuz.piclane.smartpower.sk
 
 import java.nio.ByteBuffer
 
+@Suppress("UNUSED_PARAMETER")
 data class EchoNetLiteFrame(
     /** ECHONET Lite電文ヘッダー1 uint8 (02-3.2.1.1) */
     val ehd1: Int,
@@ -104,6 +105,7 @@ data class EchoNetLiteFrame(
     ) {
         /** EDT のバイト数 unit8 (02-3.2.8) */
         val pdc get() = edt.size
+
         /** EDT を ByteBuffer に変換します */
         fun toByteBuffer(): ByteBuffer = ByteBuffer.wrap(edt.toByteArray())
 
@@ -135,6 +137,7 @@ data class EchoNetLiteFrame(
         /**
          * ByteBuffer の現在位置からの内容でインスタンスを生成します
          */
+        @JvmStatic
         fun from(buf: ByteBuffer): EchoNetLiteFrame {
             val ehd1 = parseUInt8(buf.get())
             val ehd2 = parseUInt8(buf.get())
@@ -143,19 +146,20 @@ data class EchoNetLiteFrame(
             return EchoNetLiteFrame(ehd1, ehd2, tid, edata)
         }
 
+        @JvmStatic
         fun fromHex(hex: String): EchoNetLiteFrame = from(parseUInt8Array(hex))
     }
 
     /**
-     * ByteBuffer を生成します
+     * バイト配列を生成します
      */
-    fun toByteBuffer(): ByteBuffer {
+    fun toByteArray(): ByteArray {
         val buf = ByteBuffer.allocate(size)
         buf.put(ehd1.toByte())
         buf.put(ehd2.toByte())
         buf.putShort(tid.toShort())
         edata.putInto(buf)
         buf.rewind()
-        return buf
+        return buf.array()
     }
 }
