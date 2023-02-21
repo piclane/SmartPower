@@ -1,0 +1,16 @@
+type Query {
+    "瞬時電力計測値 (W)"
+    instantaneousPower: Int!
+    "瞬時電流計測値 (A)"
+    instantaneousCurrent: Current!
+}
+
+"電流"
+type Current {
+    "R相"
+    rPhase: Float!
+    "T相"
+    tPhase: Float!
+    "合計"
+    sum: Float!
+}
