@@ -1,12 +1,17 @@
-package com.xxuz.piclane.smartpower
+package com.xxuz.piclane.smartpower.power
 
 import com.xxuz.piclane.smartpower.sk.*
 import com.xxuz.piclane.smartpower.sk.command.SendToSecurity
+import com.xxuz.piclane.smartpower.sk.event.PanDesc
 import jakarta.annotation.PostConstruct
 import jakarta.annotation.PreDestroy
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.beans.PropertyChangeEvent
+import java.beans.PropertyChangeListener
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
 @Service
@@ -23,13 +28,64 @@ class PowerObserver(
     companion object {
         /** ロガー */
         private val logger = LoggerFactory.getLogger(PowerObserver::class.java)
+
+        /** プロパティー名: 瞬時電力計測値 (W) */
+        const val PROPERTY_INSTANTANEOUS_POWER = "instantaneousPower"
+
+        /** プロパティー名: 瞬時電流計測値 (A) */
+        const val PROPERTY_INSTANTANEOUS_CURRENT = "instantaneousCurrent"
     }
 
     /** 通信スレッド */
     private lateinit var thread: Thread
 
     /** ステータス */
-    private var status: AtomicReference<Status> = AtomicReference(Status.Ready)
+    private val status: AtomicReference<Status> = AtomicReference(Status.Ready)
+
+    /** 瞬時電力計測値 (W) */
+    private val instantaneousPower = AtomicInteger(0)
+
+    /** 瞬時電流計測値 (A) */
+    private val instantaneousCurrent = AtomicReference(Current.ZERO)
+
+    /** PropertyChangeListener の配列 */
+    private val propertyChangeListeners = CopyOnWriteArrayList<PropertyChangeListener>()
+
+    /** ステータスを取得します */
+    fun getStatus(): Status = status.get()
+
+    /** 瞬時電力計測値 (W) を取得します */
+    fun getInstantaneousPower(): Int = instantaneousPower.get()
+
+    /** 瞬時電流計測値 (A) を取得します */
+    fun getInstantaneousCurrent(): Current = instantaneousCurrent.get()
+
+    /**
+     * PropertyChangeListener を追加します
+     */
+    fun addPropertyChangeListener(listener: PropertyChangeListener) {
+        propertyChangeListeners.add(listener)
+    }
+
+    /**
+     * PropertyChangeListener を削除します
+     */
+    fun removePropertyChangeListener(listener: PropertyChangeListener) {
+        propertyChangeListeners.remove(listener)
+    }
+
+    /**
+     * PropertyChangeEvent を発火します
+     */
+    private fun <T> firePropertyChangeEvent(propertyName: String, oldValue: T, newValue: T) {
+        if(oldValue == newValue) {
+            return
+        }
+        val event = PropertyChangeEvent(this, propertyName, oldValue, newValue)
+        propertyChangeListeners.forEach {
+            it.propertyChange(event)
+        }
+    }
 
     /**
      * 通信スレッド開始
@@ -102,7 +158,11 @@ class PowerObserver(
             sk.setPassword(devicePassword)
             sk.setRouteBId(deviceRbid)
 
-            val pans = sk.activeScan(0xffffffff, 6)
+            val pans = mutableListOf<PanDesc>()
+            var trial = 3
+            do {
+                pans.addAll(sk.activeScan(0xffffffff, 6))
+            } while (pans.isEmpty() && trial-- > 0)
             if (pans.isEmpty()) {
                 throw RuntimeException("スマートメーターが見つかりませんでした")
             }
@@ -156,12 +216,19 @@ class PowerObserver(
                         val buf = op.toByteBuffer()
                         when(op.epc) {
                             0xE7 -> {
-                                println("瞬時電力計測値 ${buf.int}W")
+                                val newValue = buf.int
+                                val oldValue = instantaneousPower.getAndSet(newValue)
+                                firePropertyChangeEvent(PROPERTY_INSTANTANEOUS_POWER, oldValue, newValue)
+                                println("瞬時電力計測値 ${instantaneousPower}W")
                             }
                             0xE8 -> {
-                                val rPhase = buf.short.toDouble() * 0.1
-                                val tPhase = buf.short.toDouble() * 0.1
-                                println("瞬時電流計測値 R相 ${rPhase}A, T相 ${tPhase}A")
+                                val newValue = Current(
+                                    rPhase = buf.short.toDouble() * 0.1,
+                                    tPhase = buf.short.toDouble() * 0.1,
+                                )
+                                val oldValue = instantaneousCurrent.getAndSet(newValue)
+                                firePropertyChangeEvent(PROPERTY_INSTANTANEOUS_CURRENT, oldValue, newValue)
+                                println("瞬時電流計測値 R相 ${newValue.rPhase}A, T相 ${newValue.tPhase}A")
                             }
                         }
                     }
@@ -173,7 +240,7 @@ class PowerObserver(
     /**
      * ステータス
      */
-    private enum class Status {
+    enum class Status {
         /** 初期化前 */
         Ready,
         /** 初期化中 */

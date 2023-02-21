@@ -1,10 +1,16 @@
 package com.xxuz.piclane.smartpower.sk.event
 
-import java.nio.ByteBuffer
+import com.xxuz.piclane.smartpower.sk.IpAddr
 
+/**
+ * イベント
+ */
 data class Event(
+    /** イベント番号 */
     val num: Num,
-    val sender: ByteBuffer,
+    /** イベントのトリガーとなったメッセージの発信元アドレス */
+    val sender: IpAddr,
+    /** イベント固有の引数 */
     val param: Int?
 ): EventBase {
     enum class Num(val value: Int) {
