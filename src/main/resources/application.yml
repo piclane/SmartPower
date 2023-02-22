@@ -6,16 +6,10 @@ spring:
     password: ${DB_PASSWORD}
     hikari:
       auto-commit: false
-  servlet:
-    multipart:
-      max-file-size: 500MB
-      max-request-size: 1GB
   graphql:
     path: /graphql
     websocket:
       path: /graphql
-    graphiql:
-      enabled: true
 server:
   port: ${PORT:8080}
 logging:
