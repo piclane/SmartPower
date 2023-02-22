@@ -34,6 +34,9 @@ class PowerObserver(
 
         /** プロパティー名: 瞬時電流計測値 (A) */
         const val PROPERTY_INSTANTANEOUS_CURRENT = "instantaneousCurrent"
+
+        /** プロパティー名: 瞬時計測値 */
+        const val PROPERTY_INSTANTANEOUS = "instantaneous"
     }
 
     /** 通信スレッド */
@@ -42,11 +45,8 @@ class PowerObserver(
     /** ステータス */
     private val status: AtomicReference<Status> = AtomicReference(Status.Ready)
 
-    /** 瞬時電力計測値 (W) */
-    private val instantaneousPower = AtomicInteger(0)
-
-    /** 瞬時電流計測値 (A) */
-    private val instantaneousCurrent = AtomicReference(Current.ZERO)
+    /** 瞬時計測値 */
+    private val instantaneous = AtomicReference(Instantaneous.ZERO)
 
     /** PropertyChangeListener の配列 */
     private val propertyChangeListeners = CopyOnWriteArrayList<PropertyChangeListener>()
@@ -54,11 +54,8 @@ class PowerObserver(
     /** ステータスを取得します */
     fun getStatus(): Status = status.get()
 
-    /** 瞬時電力計測値 (W) を取得します */
-    fun getInstantaneousPower(): Int = instantaneousPower.get()
-
-    /** 瞬時電流計測値 (A) を取得します */
-    fun getInstantaneousCurrent(): Current = instantaneousCurrent.get()
+    /** 瞬時計測値を取得します */
+    fun getInstantaneous() = instantaneous.get()
 
     /**
      * PropertyChangeListener を追加します
@@ -154,6 +151,8 @@ class PowerObserver(
          * 初期化
          */
         private fun init() {
+            sk.open()
+
             logger.info("SKVER: ${sk.version()}")
             sk.setPassword(devicePassword)
             sk.setRouteBId(deviceRbid)
@@ -212,26 +211,32 @@ class PowerObserver(
                 val rxFrame = EchoNetLiteFrame.fromHex(rx.data)
                 val rxEData = rxFrame.edata
                 if(rxEData.sEoj == eojDst && rxEData.esv == 0x72 /** プロパティ値読み出し応答 */) {
+                    val oldInstantaneous = instantaneous.get()
+                    var newPower = oldInstantaneous.power
+                    var newCurrent = oldInstantaneous.current
                     rxEData.op.forEach { op ->
                         val buf = op.toByteBuffer()
                         when(op.epc) {
                             0xE7 -> {
-                                val newValue = buf.int
-                                val oldValue = instantaneousPower.getAndSet(newValue)
-                                firePropertyChangeEvent(PROPERTY_INSTANTANEOUS_POWER, oldValue, newValue)
-                                println("瞬時電力計測値 ${instantaneousPower}W")
+                                newPower = buf.int
+                                firePropertyChangeEvent(PROPERTY_INSTANTANEOUS_POWER, oldInstantaneous.power, newPower)
+                                println("瞬時電力計測値 ${newPower}W")
                             }
                             0xE8 -> {
-                                val newValue = Current(
+                                newCurrent = Current(
                                     rPhase = buf.short.toDouble() * 0.1,
                                     tPhase = buf.short.toDouble() * 0.1,
                                 )
-                                val oldValue = instantaneousCurrent.getAndSet(newValue)
-                                firePropertyChangeEvent(PROPERTY_INSTANTANEOUS_CURRENT, oldValue, newValue)
-                                println("瞬時電流計測値 R相 ${newValue.rPhase}A, T相 ${newValue.tPhase}A")
+                                firePropertyChangeEvent(PROPERTY_INSTANTANEOUS_CURRENT, oldInstantaneous.current, newCurrent)
+                                println("瞬時電流計測値 R相 ${newCurrent.rPhase}A, T相 ${newCurrent.tPhase}A")
                             }
                         }
                     }
+                    val newInstantaneous = Instantaneous(
+                        power = newPower,
+                        current = newCurrent,
+                    )
+                    firePropertyChangeEvent(PROPERTY_INSTANTANEOUS, oldInstantaneous, newInstantaneous)
                 }
             }
         }
