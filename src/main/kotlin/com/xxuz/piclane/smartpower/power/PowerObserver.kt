@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service
 import java.beans.PropertyChangeEvent
 import java.beans.PropertyChangeListener
 import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
 @Service
@@ -179,6 +178,14 @@ class PowerObserver(
         private fun mainLoop() {
             val eojSrc = EchoNetLiteFrame.EOJ(0x05, 0xFF, 0x01) // 送信元：管理・操作関連機器クラスグループ／コントローラクラス (Appendix-3.6.2)
             val eojDst = EchoNetLiteFrame.EOJ(0x02, 0x88, 0x01) // 送信先：住宅・設備関連機器クラスグループ／低圧スマート電力量メータクラス (Appendix-3.3.25)
+            val defaultOp = listOf(
+                EchoNetLiteFrame.OP(epc = 0xE7), // 瞬時電力計測値
+                EchoNetLiteFrame.OP(epc = 0xE8), // 瞬時電流計測値
+            )
+//            val integralOp = listOf(
+//                EchoNetLiteFrame.OP(epc = 0xE1), // 積算電力量単位
+//                EchoNetLiteFrame.OP(epc = 0xEA), // 定時積算電力量 (正方向)
+//            )
             val frame = EchoNetLiteFrame(
                 ehd1 = 0x10, // ECHONET Lite規格であることを示す (02-3.2.1.1)
                 ehd2 = 0x81, // 電文形式 1(規定電文形式)であることを示す (02-3.2.1.2)
@@ -187,14 +194,7 @@ class PowerObserver(
                     sEoj = eojSrc,
                     dEoj = eojDst,
                     esv = 0x62, // プロパティ値読み出し要求
-                    op = listOf(
-                        EchoNetLiteFrame.OP(
-                            epc = 0xE7, // 瞬時電力計測値
-                        ),
-                        EchoNetLiteFrame.OP(
-                            epc = 0xE8 // 瞬時電流計測値
-                        ),
-                    )
+                    op = defaultOp,
                 )
             ).toByteArray()
 
