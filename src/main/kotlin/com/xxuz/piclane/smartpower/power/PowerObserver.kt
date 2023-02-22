@@ -220,7 +220,6 @@ class PowerObserver(
                             0xE7 -> {
                                 newPower = buf.int
                                 firePropertyChangeEvent(PROPERTY_INSTANTANEOUS_POWER, oldInstantaneous.power, newPower)
-                                println("瞬時電力計測値 ${newPower}W")
                             }
                             0xE8 -> {
                                 newCurrent = Current(
@@ -228,7 +227,6 @@ class PowerObserver(
                                     tPhase = buf.short.toDouble() * 0.1,
                                 )
                                 firePropertyChangeEvent(PROPERTY_INSTANTANEOUS_CURRENT, oldInstantaneous.current, newCurrent)
-                                println("瞬時電流計測値 R相 ${newCurrent.rPhase}A, T相 ${newCurrent.tPhase}A")
                             }
                         }
                     }
