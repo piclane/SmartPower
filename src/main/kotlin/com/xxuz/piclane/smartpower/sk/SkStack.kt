@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets
  * @param device デバイスへのパス
  */
 @Suppress("UNUSED")
-class SkStack(device: String) {
+class SkStack(private val device: String) {
     companion object {
         /** ロガー */
         private val logger = LoggerFactory.getLogger(SkStack::class.java)
@@ -30,18 +30,27 @@ class SkStack(device: String) {
         }
     }
 
+    /** ステータス */
+    private var status = Status.CREATED
+
     /** SerialPort */
-    private val serialPort: SerialPort
+    private lateinit var serialPort: SerialPort
 
     /** 読み込みバッファ */
-    private val reader: BufferedReader
+    private lateinit var reader: BufferedReader
 
     /** 書き込みライター */
-    private val writer: PrintWriter
+    private lateinit var writer: PrintWriter
 
-    init {
-        this.serialPort = SerialPort.getCommPort(device)
+    fun open() {
+        when(status) {
+            Status.CREATED -> {}
+            Status.OPENED -> throw IllegalStateException("既にオープンされています")
+            Status.DISPOSED -> throw IllegalStateException("既に破棄されています")
+        }
 
+        // シリアルポート初期化
+        serialPort = SerialPort.getCommPort(device)
         serialPort.allowElevatedPermissionsRequest()
         serialPort.openPort().also {
             if(!it) {
@@ -51,8 +60,9 @@ class SkStack(device: String) {
         serialPort.baudRate = 115200
         serialPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 100, 0)
 
-        this.reader = BufferedReader(InputStreamReader(serialPort.inputStream, StandardCharsets.US_ASCII))
-        this.writer = CrLfPrintWriter(OutputStreamWriter(serialPort.outputStream, StandardCharsets.US_ASCII))
+        // 入出力
+        reader = BufferedReader(InputStreamReader(serialPort.inputStream, StandardCharsets.US_ASCII))
+        writer = CrLfPrintWriter(OutputStreamWriter(serialPort.outputStream, StandardCharsets.US_ASCII))
 
         // バッファをフラッシュする
         while(true) {
@@ -62,15 +72,24 @@ class SkStack(device: String) {
                 break
             }
         }
+
+        status = Status.OPENED
     }
 
     /**
      * 利用を終了します
      */
     fun close() {
+        when(status) {
+            Status.CREATED -> return
+            Status.OPENED -> {}
+            Status.DISPOSED -> return
+        }
+
         reader.close()
         writer.close()
         serialPort.closePort()
+        status = Status.DISPOSED
     }
 
     /** 現在取得済みの行 */
@@ -197,6 +216,15 @@ class SkStack(device: String) {
                 out.flush()
             }
         }
+    }
+
+    enum class Status {
+        /** インスタンス作成直後 */
+        CREATED,
+        /** オープン済み */
+        OPENED,
+        /** 破棄状態 */
+        DISPOSED
     }
 
     /**

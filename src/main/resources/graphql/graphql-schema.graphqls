@@ -1,8 +1,19 @@
 type Query {
+    "瞬時計測値"
+    instantaneous: Instantaneous!
+}
+
+type Subscription {
+    "瞬時計測値"
+    instantaneous: Instantaneous!
+}
+
+"瞬時計測値"
+type Instantaneous {
     "瞬時電力計測値 (W)"
-    instantaneousPower: Int!
-    "瞬時電流計測値 (A)"
-    instantaneousCurrent: Current!
+    power: Int!
+    "瞬時電流計測値"
+    current: Current!
 }
 
 "電流"
@@ -14,3 +25,5 @@ type Current {
     "合計"
     sum: Float!
 }
+
+
