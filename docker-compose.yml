@@ -5,8 +5,6 @@ services:
       dockerfile: .container/Dockerfile
       context: .
     image: smart-power:0.0.1
-    volumes:
-      - ./:/app/
     devices:
       - /dev/ttyUSB0
 #      - /dev/cu.usbserial-DK0CBKBW
