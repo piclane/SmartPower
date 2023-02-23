@@ -1,3 +1,8 @@
+app:
+  device:
+    path: ${DEVICE_PATH}
+    password: ${DEVICE_PASSWORD}
+    rbid: ${DEVICE_RBID}
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -14,5 +19,5 @@ server:
   port: ${PORT:8080}
 logging:
   level:
-    com.xxuz.piclane.smartpower.sk: debug
+    com.xxuz.piclane.smartpower.sk: info
     org.apache.coyote.http11: warn

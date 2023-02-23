@@ -1,23 +1,35 @@
 version: '3.5'
 services:
   app:
-    image: amazoncorretto:17.0.6-al2
+    build:
+      dockerfile: .container/Dockerfile
+      context: .
+    image: smart-power:0.0.1
     volumes:
       - ./:/app/
     devices:
-      - /dev/ttyUSB0:/dev/ttyUSB0
-  db:
-    image: mysql:8.0.32-oracle
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: "password"
-      TZ: Asia/Tokyo
-    volumes:
-      - mysql-tablespace:/var/lib/mysql
-      - ./mysql/mysql_initdb.d/:/docker-entrypoint-initdb.d/
-      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      - /dev/ttyUSB0
+#      - /dev/cu.usbserial-DK0CBKBW
     ports:
-      - "3308:3306"
-volumes:
-  mysql-tablespace:
-    driver: local
+      - "8080:8080"
+    environment:
+      DEVICE_PATH: /dev/ttyUSB0
+#      DEVICE_PATH: /dev/cu.usbserial-DK0CBKBW
+      DEVICE_PASSWORD: XXXX
+      DEVICE_RBID: XXXX
+
+#  db:
+#    image: mysql:8.0.32-oracle
+#    restart: always
+#    environment:
+#      MYSQL_ROOT_PASSWORD: "password"
+#      TZ: Asia/Tokyo
+#    volumes:
+#      - mysql-tablespace:/var/lib/mysql
+#      - ./mysql/mysql_initdb.d/:/docker-entrypoint-initdb.d/
+#      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+#    ports:
+#      - "3308:3306"
+#volumes:
+#  mysql-tablespace:
+#    driver: local

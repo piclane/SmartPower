@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.apache.tools.ant.taskdefs.condition.Os
 
 plugins {
     id("org.springframework.boot") version "3.0.2"
@@ -8,7 +9,7 @@ plugins {
 }
 
 group = "com.xxuz.piclane"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
 configurations {
@@ -24,7 +25,7 @@ repositories {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-graphql")
-    implementation("org.springframework.boot:spring-boot-starter-jdbc")
+//    implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
@@ -41,6 +42,45 @@ dependencies {
     testImplementation("org.springframework:spring-webflux")
     testImplementation("org.springframework.graphql:spring-graphql-test")
     testImplementation("org.assertj:assertj-core:3.24.2")
+}
+
+tasks.register("buildFront") {
+    group = "build"
+    description = "yarn run build"
+    doLast {
+        val webProjectDir = file("${projectDir}/frontend")
+        val yarnBin = if(Os.isFamily(Os.FAMILY_WINDOWS)) "yarn.cmd" else "yarn"
+
+        project.exec {
+            workingDir = webProjectDir
+            commandLine(yarnBin, "install")
+        }
+
+        project.exec {
+            workingDir = webProjectDir
+            commandLine(yarnBin, "run", "build")
+        }
+
+        ant.withGroovyBuilder {
+            "mkdir"("dir" to "${webProjectDir}/build/")
+            "move"("todir" to "${buildDir}/resources/main/static/", "overwrite" to true) {
+                "fileset"("dir" to "${webProjectDir}/build/")
+            }
+        }
+    }
+}
+
+tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar> {
+    dependsOn(tasks.getByName("buildFront"))
+}
+
+tasks.withType<Jar> {
+    manifest {
+        attributes["Implementation-Title"] = group
+        attributes["Implementation-Version"] = archiveVersion
+        attributes["Implementation-Vendor"] = "piclane"
+    }
+    archiveClassifier.set("")
 }
 
 tasks.withType<KotlinCompile> {
