@@ -22,7 +22,9 @@ RUN if [ "$(arch)" = 'x86_64' ] ; then \
 # ビルド
 COPY . /build
 RUN cd /build && \
-    ./gradlew bootJar
+    ./gradlew clean
+RUN ./gradlew bootJar && \
+    ./gradlew bootJar --info
 
 FROM amazoncorretto:17.0.6-al2
 

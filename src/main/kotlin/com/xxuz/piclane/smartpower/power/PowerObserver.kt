@@ -157,10 +157,10 @@ class PowerObserver(
             sk.setRouteBId(deviceRbid)
 
             val pans = mutableListOf<PanDesc>()
-            var trial = 3
+            var trial = 0
             do {
-                pans.addAll(sk.activeScan(0xffffffff, 6))
-            } while (pans.isEmpty() && trial-- > 0)
+                pans.addAll(sk.activeScan(0xffffffff, 4 + trial))
+            } while (pans.isEmpty() && ++trial < 4)
             if (pans.isEmpty()) {
                 throw RuntimeException("スマートメーターが見つかりませんでした")
             }

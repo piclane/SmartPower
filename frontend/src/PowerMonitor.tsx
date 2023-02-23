@@ -2,7 +2,7 @@ import gql from "graphql-tag";
 import {useSubscription} from "@apollo/client";
 import React from "react";
 import {amber, blue, deepOrange, orange} from 'material-ui-colors'
-import {Cell, Label, Pie, PieChart} from "recharts";
+import {Cell, Pie, PieChart} from "recharts";
 import './PowerMonitor.css';
 import {NumericFormat} from "react-number-format";
 

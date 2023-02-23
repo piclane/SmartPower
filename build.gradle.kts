@@ -23,7 +23,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+//    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-graphql")
 //    implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -53,12 +53,12 @@ tasks.register("buildFront") {
 
         project.exec {
             workingDir = webProjectDir
-            commandLine(yarnBin, "install")
+            commandLine(yarnBin, "install", "--frozen-lockfile")
         }
 
         project.exec {
             workingDir = webProjectDir
-            commandLine(yarnBin, "run", "build")
+            commandLine(yarnBin, "build")
         }
 
         ant.withGroovyBuilder {
@@ -70,7 +70,7 @@ tasks.register("buildFront") {
     }
 }
 
-tasks.withType<org.springframework.boot.gradle.tasks.bundling.BootJar> {
+tasks.withType<org.gradle.language.jvm.tasks.ProcessResources> {
     dependsOn(tasks.getByName("buildFront"))
 }
 
