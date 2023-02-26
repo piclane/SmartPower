@@ -1,6 +1,8 @@
 type Query {
     "瞬時計測値"
     instantaneous: Instantaneous!
+    "電源"
+    powerSource: PowerSource!
 }
 
 type Subscription {
@@ -26,4 +28,11 @@ type Current {
     sum: Float!
 }
 
+"電源"
+type PowerSource {
+    "定格電流 (A)"
+    ratedCurrentA: Int!
+    "線式 (2 or 3)"
+    wireCount: Int!
+}
 
