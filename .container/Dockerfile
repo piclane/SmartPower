@@ -21,11 +21,12 @@ RUN if [ "$(arch)" = 'x86_64' ] ; then \
 
 # ビルド
 COPY . /build
+ENV GRADLE_OPTS -Dorg.gradle.daemon=false
 RUN cd /build && \
-    ./gradlew clean --no-daemon
+    ./gradlew clean
 RUN cd /build && \
-    ./gradlew bootJar --no-daemon && \
-    ./gradlew bootJar --no-daemon --info
+    ./gradlew bootJar && \
+    ./gradlew bootJar --info
 
 FROM amazoncorretto:17.0.6-al2
 
