@@ -1,6 +1,6 @@
 package com.xxuz.piclane.smartpower.gql
 
-import com.xxuz.piclane.smartpower.power.Instantaneous
+import com.xxuz.piclane.smartpower.model.Instantaneous
 import com.xxuz.piclane.smartpower.power.PowerObserver
 import org.reactivestreams.Subscription
 import org.springframework.beans.factory.annotation.Autowired
