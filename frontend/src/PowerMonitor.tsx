@@ -1,10 +1,40 @@
 import gql from "graphql-tag";
-import {useSubscription} from "@apollo/client";
+import {useQuery, useSubscription} from "@apollo/client";
 import React from "react";
 import {amber, blue, deepOrange, orange} from 'material-ui-colors'
 import {Cell, Pie, PieChart} from "recharts";
 import './PowerMonitor.css';
 import {NumericFormat} from "react-number-format";
+
+interface Instantaneous {
+  power: number;
+  current: Current;
+}
+
+interface Current {
+  sum: number;
+  rPhase: number;
+  tPhase: number;
+}
+
+interface PowerSource {
+  ratedCurrentA: number;
+  wireCount: 2 | 3;
+}
+
+const defaultInstantaneous: Instantaneous = {
+  power: 0,
+  current: {
+    sum: 0,
+    tPhase: 0,
+    rPhase: 0,
+  },
+};
+
+const defaultPowerSource: PowerSource = {
+  ratedCurrentA: 60,
+  wireCount: 3,
+};
 
 const query = gql`
     subscription SmartPower {
@@ -12,6 +42,25 @@ const query = gql`
             power
             current {
                 sum
+                rPhase
+                tPhase
+            }
+        }
+    }
+`;
+
+const initialQuery = gql`
+    query SmartPowerInitial {
+        powerSource {
+            ratedCurrentA
+            wireCount
+        }
+        instantaneous {
+            power
+            current {
+                sum
+                rPhase
+                tPhase
             }
         }
     }
@@ -39,19 +88,103 @@ function buildColor(ratio: number): string {
   }
 }
 
-export const PowerMonitor = () => {
-  const { data } = useSubscription(
-      query
-  );
-
-  const instantaneous = data?.instantaneous;
-  const power = instantaneous?.power ?? 0;
-  const current = instantaneous?.current?.sum ?? 0;
-  const maxCurrent = 60;
-  const chartDataValues = [
-    {name: 'used', value: current, color: buildColor(current / maxCurrent)},
-    {name: 'free', value: maxCurrent - current, color: '#edebeb', filter: 'url(#filter_0)'},
+const renderTwoWire = (powerSource: PowerSource, instantaneous: Instantaneous) => {
+  const current: Current = instantaneous.current;
+  const rChartDataValues = [
+    {name: 'used', value: current.rPhase, color: buildColor(current.rPhase / powerSource.ratedCurrentA)},
+    {name: 'free', value: powerSource.ratedCurrentA - current.rPhase, color: '#edebeb', filter: 'url(#filter_0)'},
   ];
+  return <>
+    {/** R相 */}
+    <Pie
+        data={rChartDataValues}
+        dataKey="value"
+        cx="50%"
+        cy="50%"
+        startAngle={220}
+        endAngle={-40}
+        innerRadius={150}
+        outerRadius={190}
+        paddingAngle={0}
+        isAnimationActive={true}
+    >
+      {rChartDataValues.map(cd => (
+          <Cell
+              key={cd.name}
+              fill={cd.color}
+              stroke="0"
+              filter={cd.filter}
+          />
+      ))}
+    </Pie>
+  </>;
+};
+
+const renderThreeWire = (powerSource: PowerSource, instantaneous: Instantaneous) => {
+  const current: Current = instantaneous.current;
+  const rChartDataValues = [
+    {name: 'used', value: current.rPhase, color: buildColor(current.rPhase / powerSource.ratedCurrentA)},
+    {name: 'free', value: powerSource.ratedCurrentA - current.rPhase, color: '#edebeb', filter: 'url(#filter_0)'},
+  ];
+  const tChartDataValues = [
+    {name: 'used', value: current.tPhase, color: buildColor(current.tPhase / powerSource.ratedCurrentA)},
+    {name: 'free', value: powerSource.ratedCurrentA - current.tPhase, color: '#edebeb', filter: 'url(#filter_0)'},
+  ];
+
+  return <>
+    {/** R相 */}
+    <Pie
+        data={rChartDataValues}
+        dataKey="value"
+        cx="50%"
+        cy="50%"
+        startAngle={265}
+        endAngle={95}
+        innerRadius={150}
+        outerRadius={190}
+        paddingAngle={0}
+        isAnimationActive={true}
+    >
+      {rChartDataValues.map(cd => (
+          <Cell
+              key={cd.name}
+              fill={cd.color}
+              stroke="0"
+              filter={cd.filter}
+          />
+      ))}
+    </Pie>
+    {/** T相 */}
+    <Pie
+        data={tChartDataValues}
+        dataKey="value"
+        cx="50%"
+        cy="50%"
+        startAngle={-85}
+        endAngle={85}
+        innerRadius={150}
+        outerRadius={190}
+        paddingAngle={0}
+        isAnimationActive={true}
+    >
+      {tChartDataValues.map(cd => (
+          <Cell
+              key={cd.name}
+              fill={cd.color}
+              stroke="0"
+              filter={cd.filter}
+          />
+      ))}
+    </Pie>
+  </>;
+};
+
+export const PowerMonitor = () => {
+  const {data, loading} = useSubscription(query);
+  const {data: initialData} = useQuery<{powerSource: PowerSource; instantaneous: Instantaneous;}>(initialQuery);
+  const powerSource = initialData?.powerSource ?? defaultPowerSource;
+  const instantaneous = data?.instantaneous ?? initialData?.instantaneous ?? defaultInstantaneous;
+  const {power, current} = instantaneous;
 
   return (
     <>
@@ -67,28 +200,11 @@ export const PowerMonitor = () => {
               <feComposite operator="over" in="shadow" in2="SourceGraphic"></feComposite>
             </filter>
           </defs>
-          <Pie
-              data={chartDataValues}
-              dataKey="value"
-              cx="50%"
-              cy="50%"
-              startAngle={220}
-              endAngle={-40}
-              innerRadius={150}
-              outerRadius={190}
-              paddingAngle={0}
-              isAnimationActive={true}
-          >
-            {chartDataValues.map(cd => (
-                <Cell
-                    key={cd.name}
-                    fill={cd.color}
-                    stroke="0"
-                    filter={cd.filter}
-                />
-            ))}
-          </Pie>
+          {powerSource.wireCount === 3
+           ? renderThreeWire(powerSource, instantaneous)
+           : renderTwoWire(powerSource, instantaneous)}
         </PieChart>
+        <div className={loading ? 'loading active' : 'loading inactive'} />
         <div className="numeric_meters">
           <div className="numeric_meter">
             <div className="title">Power Now</div>
@@ -101,7 +217,7 @@ export const PowerMonitor = () => {
           <div className="numeric_meter">
             <div className="title">Current Now</div>
             <div className="value">
-              <NumericFormat value={current} displayType="text" thousandSeparator={true} />
+              <NumericFormat value={current.sum} displayType="text" thousandSeparator={true} />
               <span className="unit">A</span>
             </div>
           </div>

@@ -3,6 +3,9 @@ app:
     path: ${DEVICE_PATH}
     password: ${DEVICE_PASSWORD}
     rbid: ${DEVICE_RBID}
+  powerSource:
+    ratedCurrentA: ${POWER_SOURCE_RATED_COUNT_A:60}
+    wireCount: ${POWER_SOURCE_WIRE_COUNT:3}
 spring:
 #  datasource:
 #    driver-class-name: com.mysql.cj.jdbc.Driver
@@ -19,5 +22,5 @@ server:
   port: ${PORT:8080}
 logging:
   level:
-    com.xxuz.piclane.smartpower.sk: info
+    com.xxuz.piclane.smartpower.sk: ${LOG_LEVEL_SK:info}
     org.apache.coyote.http11: warn

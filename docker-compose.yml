@@ -15,6 +15,9 @@ services:
 #      DEVICE_PATH: /dev/cu.usbserial-DK0CBKBW
       DEVICE_PASSWORD: XXXX
       DEVICE_RBID: XXXX
+      POWER_SOURCE_RATED_COUNT_A: 60
+      POWER_SOURCE_WIRE_COUNT: 3
+      LOG_LEVEL_SK: debug
 
 #  db:
 #    image: mysql:8.0.32-oracle

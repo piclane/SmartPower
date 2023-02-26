@@ -1,16 +1,17 @@
 const { createProxyMiddleware } = require("http-proxy-middleware");
 
 module.exports = function (app) {
+    const targetHost = 'localhost:8080';
     app.use(
         createProxyMiddleware("/graphql", {
-            target: "http://localhost:8080/", // API のベース URL
+            target: `http://${targetHost}/`, // API のベース URL
             changeOrigin: true,
         })
     );
 
     app.use(
         createProxyMiddleware("/graphql", {
-            target: "ws://localhost:8080/", // API のベース URL
+            target: `ws://${targetHost}/`, // API のベース URL
             changeOrigin: true,
             ws: true
         })
