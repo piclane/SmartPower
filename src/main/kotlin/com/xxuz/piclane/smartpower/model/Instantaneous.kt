@@ -1,4 +1,4 @@
-package com.xxuz.piclane.smartpower.power
+package com.xxuz.piclane.smartpower.model
 
 /**
  * 瞬時計測値

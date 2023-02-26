@@ -1,5 +1,7 @@
 package com.xxuz.piclane.smartpower.power
 
+import com.xxuz.piclane.smartpower.model.Current
+import com.xxuz.piclane.smartpower.model.Instantaneous
 import com.xxuz.piclane.smartpower.sk.*
 import com.xxuz.piclane.smartpower.sk.command.SendToSecurity
 import com.xxuz.piclane.smartpower.sk.event.PanDesc
