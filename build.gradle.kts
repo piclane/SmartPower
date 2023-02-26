@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     id("org.springframework.boot") version "3.0.2"
@@ -70,7 +71,7 @@ tasks.register("buildFront") {
     }
 }
 
-tasks.withType<org.gradle.language.jvm.tasks.ProcessResources> {
+tasks.withType<BootJar> {
     dependsOn(tasks.getByName("buildFront"))
 }
 
