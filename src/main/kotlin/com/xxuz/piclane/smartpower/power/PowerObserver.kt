@@ -203,7 +203,7 @@ class PowerObserver(
             while(status.get() != Status.Stopping) {
                 sk.sendTo(1, ipAddr, 0x0E1A, SendToSecurity.ENCRYPT, frame)
                 val rx = try {
-                    sk.waitForRxUdp(10000)
+                    sk.waitForRxUdp(10000) { it.lPort == 0x0E1A }
                 } catch (e: SkTimeoutException) {
                     continue
                 } catch (e: SkEofException) {

@@ -410,13 +410,20 @@ class SkStack(private val device: String) {
      * UDP (マルチキャスト含む) を受信するまで待機します
      *
      * @param timeout イベント受信のタイムアウト (ミリ秒)
+     * @param accept 受け取った RxUdp を受け入れるかどうかを返す関数
      */
-    fun waitForRxUdp(timeout: Long = 0): RxUdp {
+    fun waitForRxUdp(timeout: Long = 0, accept: WaitForAccept<RxUdp> = {true}): RxUdp {
         while(true) {
             val event = readNextEvent(timeout)
-            if (event is RxUdp) {
-                return event
+            if (event !is RxUdp) {
+                continue
             }
+            if (!accept(event)) {
+                continue
+            }
+            return event
         }
     }
 }
+
+typealias WaitForAccept<T> = (event: T) -> Boolean
