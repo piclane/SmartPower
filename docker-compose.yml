@@ -18,6 +18,7 @@ services:
       POWER_SOURCE_RATED_COUNT_A: 60
       POWER_SOURCE_WIRE_COUNT: 3
       LOG_LEVEL_SK: debug
+      TZ: Asia/Tokyo
 
 #  db:
 #    image: mysql:8.0.32-oracle
