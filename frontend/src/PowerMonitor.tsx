@@ -1,10 +1,11 @@
 import gql from "graphql-tag";
 import {useQuery, useSubscription} from "@apollo/client";
-import React from "react";
+import React, {useRef} from "react";
 import {amber, blue, deepOrange, orange} from 'material-ui-colors'
 import {Cell, Pie, PieChart} from "recharts";
 import './PowerMonitor.css';
 import {NumericFormat} from "react-number-format";
+import {ProcessingLed, ProcessingLedMethods} from "@/ProcessingLed";
 
 interface Instantaneous {
   power: number;
@@ -180,7 +181,12 @@ const renderThreeWire = (powerSource: PowerSource, instantaneous: Instantaneous)
 };
 
 export const PowerMonitor = () => {
-  const {data, loading} = useSubscription(query);
+  const processingLedRef = useRef<ProcessingLedMethods>(null);
+  const {data} = useSubscription(query, {
+    onData() {
+      processingLedRef.current?.flush();
+    }
+  });
   const {data: initialData} = useQuery<{powerSource: PowerSource; instantaneous: Instantaneous;}>(initialQuery);
   const powerSource = initialData?.powerSource ?? defaultPowerSource;
   const instantaneous = data?.instantaneous ?? initialData?.instantaneous ?? defaultInstantaneous;
@@ -204,7 +210,7 @@ export const PowerMonitor = () => {
            ? renderThreeWire(powerSource, instantaneous)
            : renderTwoWire(powerSource, instantaneous)}
         </PieChart>
-        <div className={loading ? 'loading active' : 'loading inactive'} />
+        <ProcessingLed ref={processingLedRef} />
         <div className="numeric_meters">
           <div className="numeric_meter">
             <div className="title">Power Now</div>
