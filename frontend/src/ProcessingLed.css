@@ -1,0 +1,23 @@
+.processing-led {
+    position: relative;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    z-index: 1;
+    background-color: #00f018;
+    opacity: 1;
+    box-shadow: inset -1px -1px 2px 2px rgb(0 0 0 / 20%);
+}
+
+.processing-led.active {
+}
+
+.processing-led.inactive {
+    transition-delay: 0ms;
+    transition-property: background-color, box-shadow;
+    transition-duration: 1000ms;
+    transition-timing-function: ease-in;
+    background-color: #82a887;
+    box-shadow: inset -1px -1px 2px 2px rgb(0 0 0 / 5%);
+}
