@@ -3,7 +3,7 @@ import {useQuery, useSubscription} from "@apollo/client";
 import React, {useRef} from "react";
 import {amber, blue, deepOrange, orange} from 'material-ui-colors'
 import {Cell, Pie, PieChart} from "recharts";
-import './PowerMonitor.css';
+import './PowerMonitor.scss';
 import {NumericFormat} from "react-number-format";
 import {ProcessingLed, ProcessingLedMethods} from "@/ProcessingLed";
 
@@ -189,7 +189,7 @@ export const PowerMonitor = () => {
   });
   const {data: initialData} = useQuery<{powerSource: PowerSource; instantaneous: Instantaneous;}>(initialQuery);
   const powerSource = initialData?.powerSource ?? defaultPowerSource;
-  const instantaneous = data?.instantaneous ?? initialData?.instantaneous ?? defaultInstantaneous;
+  const instantaneous: Instantaneous = data?.instantaneous ?? initialData?.instantaneous ?? defaultInstantaneous;
   const {power, current} = instantaneous;
 
   return (
@@ -210,12 +210,18 @@ export const PowerMonitor = () => {
            ? renderThreeWire(powerSource, instantaneous)
            : renderTwoWire(powerSource, instantaneous)}
         </PieChart>
-        <ProcessingLed ref={processingLedRef} />
+
         <div className="numeric_meters">
           <div className="numeric_meter">
             <div className="title">Power Now</div>
             <div className="value">
-              <NumericFormat value={power / 1000} displayType="text" thousandSeparator={true} decimalScale={2} />
+              <NumericFormat
+                  value={power / 1000}
+                  displayType="text"
+                  thousandSeparator={true}
+                  decimalScale={2}
+                  allowLeadingZeros={true}
+              />
               <span className="unit">kW</span>
             </div>
           </div>
@@ -223,9 +229,46 @@ export const PowerMonitor = () => {
           <div className="numeric_meter">
             <div className="title">Current Now</div>
             <div className="value">
-              <NumericFormat value={current.sum} displayType="text" thousandSeparator={true} />
+              <NumericFormat
+                  value={current.sum}
+                  displayType="text"
+                  thousandSeparator={true}
+              />
               <span className="unit">A</span>
             </div>
+          </div>
+        </div>
+
+        <ProcessingLed
+            ref={processingLedRef}
+            style={{
+              position: "absolute",
+              top: "15px",
+              right: "15px"
+            }}
+        />
+
+        <div className="numeric_meter mini" style={{position: "absolute", bottom: 0, left: 0}}>
+          <div className="title">R Phase</div>
+          <div className="value">
+            <NumericFormat
+                value={current.rPhase}
+                displayType="text"
+                thousandSeparator={true}
+            />
+            <span className="unit">A</span>
+          </div>
+        </div>
+
+        <div className="numeric_meter mini" style={{position: "absolute", bottom: 0, right: 0}}>
+          <div className="title">T Phase</div>
+          <div className="value">
+            <NumericFormat
+                value={current.tPhase}
+                displayType="text"
+                thousandSeparator={true}
+            />
+            <span className="unit">A</span>
           </div>
         </div>
       </div>
