@@ -16,7 +16,7 @@ export const ProcessingLed = React.forwardRef<ProcessingLedMethods, ProcessingLe
       setActive(true);
       setTimeout(() => {
         setActive(false);
-      }, 0);
+      }, 10);
     }
   }));
   return <>
