@@ -1,11 +1,12 @@
 import gql from "graphql-tag";
 import {useQuery, useSubscription} from "@apollo/client";
-import React, {useRef} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {amber, blue, deepOrange, orange} from 'material-ui-colors'
 import {Cell, Pie, PieChart} from "recharts";
 import './PowerMonitor.scss';
 import {NumericFormat} from "react-number-format";
 import {ProcessingLed, ProcessingLedMethods} from "@/ProcessingLed";
+import {AlarmSound} from "@/AlarmSound";
 
 interface Instantaneous {
   power: number;
@@ -182,7 +183,8 @@ const renderThreeWire = (powerSource: PowerSource, instantaneous: Instantaneous)
 
 export const PowerMonitor = () => {
   const processingLedRef = useRef<ProcessingLedMethods>(null);
-  const {data} = useSubscription(query, {
+  const [isAlarmTriggered, setAlarmTriggered] = useState(false);
+  const {data} = useSubscription<{instantaneous: Instantaneous;}>(query, {
     onData() {
       processingLedRef.current?.flush();
     }
@@ -192,9 +194,15 @@ export const PowerMonitor = () => {
   const instantaneous: Instantaneous = data?.instantaneous ?? initialData?.instantaneous ?? defaultInstantaneous;
   const {power, current} = instantaneous;
 
+  useEffect(() => {
+    const alarmCurrentA = Math.max(5, powerSource.ratedCurrentA - 15);
+    setAlarmTriggered(current.rPhase > alarmCurrentA || current.tPhase > alarmCurrentA);
+  }, [powerSource, current]);
+
   return (
     <>
       <div className="gauge_container">
+        <AlarmSound triggered={isAlarmTriggered} />
         <PieChart width={400} height={400}>
           <defs>
             <filter id="filter_0">
