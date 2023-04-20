@@ -90,39 +90,69 @@ function buildColor(ratio: number): string {
   }
 }
 
-const renderTwoWire = (powerSource: PowerSource, instantaneous: Instantaneous) => {
+interface RendererProps {
+  powerSource: PowerSource;
+  instantaneous: Instantaneous;
+}
+
+type PieChartProps = ConstructorParameters<typeof PieChart>[0];
+
+const BasePieChart = ({children, ...pcProps}: PieChartProps) => (
+    <PieChart {...pcProps}>
+      <defs>
+        <filter id="filter_0">
+          <feOffset dx="0" dy="3"></feOffset>
+          <feGaussianBlur result="offset-blur" stdDeviation="5"></feGaussianBlur>
+          <feComposite operator="out" in="SourceGraphic" in2="offset-blur" result="inverse"></feComposite>
+          <feFlood floodColor="black" floodOpacity="0.4" result="color"></feFlood>
+          <feComposite operator="in" in="color" in2="inverse" result="shadow"></feComposite>
+          <feComposite operator="over" in="shadow" in2="SourceGraphic"></feComposite>
+        </filter>
+      </defs>
+      {children}
+    </PieChart>
+);
+
+interface PieChartRendererProps extends PieChartProps {
+  powerSource: PowerSource;
+  instantaneous: Instantaneous;
+}
+
+const TwoWirePieChart = React.memo(({powerSource, instantaneous, ...pcProps}: PieChartRendererProps) => {
   const current: Current = instantaneous.current;
   const rChartDataValues = [
     {name: 'used', value: current.rPhase, color: buildColor(current.rPhase / powerSource.ratedCurrentA)},
     {name: 'free', value: powerSource.ratedCurrentA - current.rPhase, color: '#edebeb', filter: 'url(#filter_0)'},
   ];
-  return <>
-    {/** R相 */}
-    <Pie
-        data={rChartDataValues}
-        dataKey="value"
-        cx="50%"
-        cy="50%"
-        startAngle={220}
-        endAngle={-40}
-        innerRadius={150}
-        outerRadius={190}
-        paddingAngle={0}
-        isAnimationActive={true}
-    >
-      {rChartDataValues.map(cd => (
-          <Cell
-              key={cd.name}
-              fill={cd.color}
-              stroke="0"
-              filter={cd.filter}
-          />
-      ))}
-    </Pie>
-  </>;
-};
+  return (
+      <BasePieChart {...pcProps}>
+        {/** R相 */}
+        <Pie
+            data={rChartDataValues}
+            dataKey="value"
+            cx="50%"
+            cy="50%"
+            startAngle={220}
+            endAngle={-40}
+            innerRadius={150}
+            outerRadius={190}
+            paddingAngle={0}
+            isAnimationActive={true}
+        >
+          {rChartDataValues.map(cd => (
+              <Cell
+                  key={cd.name}
+                  fill={cd.color}
+                  stroke="0"
+                  filter={cd.filter}
+              />
+          ))}
+        </Pie>
+      </BasePieChart>
+  );
+});
 
-const renderThreeWire = (powerSource: PowerSource, instantaneous: Instantaneous) => {
+const ThreeWirePieChart = React.memo(({powerSource, instantaneous, ...pcProps}: PieChartRendererProps) => {
   const current: Current = instantaneous.current;
   const rChartDataValues = [
     {name: 'used', value: current.rPhase, color: buildColor(current.rPhase / powerSource.ratedCurrentA)},
@@ -133,53 +163,88 @@ const renderThreeWire = (powerSource: PowerSource, instantaneous: Instantaneous)
     {name: 'free', value: powerSource.ratedCurrentA - current.tPhase, color: '#edebeb', filter: 'url(#filter_0)'},
   ];
 
-  return <>
-    {/** R相 */}
-    <Pie
-        data={rChartDataValues}
-        dataKey="value"
-        cx="50%"
-        cy="50%"
-        startAngle={265}
-        endAngle={95}
-        innerRadius={150}
-        outerRadius={190}
-        paddingAngle={0}
-        isAnimationActive={true}
-    >
-      {rChartDataValues.map(cd => (
-          <Cell
-              key={cd.name}
-              fill={cd.color}
-              stroke="0"
-              filter={cd.filter}
-          />
-      ))}
-    </Pie>
-    {/** T相 */}
-    <Pie
-        data={tChartDataValues}
-        dataKey="value"
-        cx="50%"
-        cy="50%"
-        startAngle={-85}
-        endAngle={85}
-        innerRadius={150}
-        outerRadius={190}
-        paddingAngle={0}
-        isAnimationActive={true}
-    >
-      {tChartDataValues.map(cd => (
-          <Cell
-              key={cd.name}
-              fill={cd.color}
-              stroke="0"
-              filter={cd.filter}
-          />
-      ))}
-    </Pie>
-  </>;
-};
+  return (
+      <BasePieChart {...pcProps}>
+        {/** R相 */}
+        <Pie
+            data={rChartDataValues}
+            dataKey="value"
+            cx="50%"
+            cy="50%"
+            startAngle={265}
+            endAngle={95}
+            innerRadius={150}
+            outerRadius={190}
+            paddingAngle={0}
+            isAnimationActive={true}
+        >
+          {rChartDataValues.map(cd => (
+              <Cell
+                  key={cd.name}
+                  fill={cd.color}
+                  stroke="0"
+                  filter={cd.filter}
+              />
+          ))}
+        </Pie>
+        {/** T相 */}
+        <Pie
+            data={tChartDataValues}
+            dataKey="value"
+            cx="50%"
+            cy="50%"
+            startAngle={-85}
+            endAngle={85}
+            innerRadius={150}
+            outerRadius={190}
+            paddingAngle={0}
+            isAnimationActive={true}
+        >
+          {tChartDataValues.map(cd => (
+              <Cell
+                  key={cd.name}
+                  fill={cd.color}
+                  stroke="0"
+                  filter={cd.filter}
+              />
+          ))}
+        </Pie>
+      </BasePieChart>
+  );
+});
+
+const CenterDisplay = React.memo(({instantaneous}: RendererProps) => {
+  const {power, current} = instantaneous;
+  return (
+      <div className="numeric_meters">
+        <div className="numeric_meter">
+          <div className="title">Power Now</div>
+          <div className="value">
+            <NumericFormat
+                value={power / 1000}
+                displayType="text"
+                thousandSeparator={true}
+                decimalScale={2}
+                allowLeadingZeros={true}
+            />
+            <span className="unit">kW</span>
+          </div>
+        </div>
+        <hr />
+        <div className="numeric_meter">
+          <div className="title">Current Now</div>
+          <div className="value">
+            <NumericFormat
+                value={current.sum}
+                displayType="text"
+                thousandSeparator={true}
+            />
+            <span className="unit">A</span>
+          </div>
+        </div>
+      </div>
+  );
+})
 
 export const PowerMonitor = () => {
   const processingLedRef = useRef<ProcessingLedMethods>(null);
@@ -190,62 +255,36 @@ export const PowerMonitor = () => {
     }
   });
   const {data: initialData} = useQuery<{powerSource: PowerSource; instantaneous: Instantaneous;}>(initialQuery);
-  const powerSource = initialData?.powerSource ?? defaultPowerSource;
-  const instantaneous: Instantaneous = data?.instantaneous ?? initialData?.instantaneous ?? defaultInstantaneous;
-  const {power, current} = instantaneous;
+  const renderData = React.useMemo(() => {
+    return {
+      powerSource: initialData?.powerSource ?? defaultPowerSource,
+      instantaneous: data?.instantaneous ?? initialData?.instantaneous ?? defaultInstantaneous
+    } as RendererProps;
+  }, [data, initialData]);
+  const pieChartData: PieChartRendererProps = {
+    width: 400,
+    height: 400,
+    ...renderData,
+  }
+  const {powerSource, instantaneous} = renderData;
+  const {current} = instantaneous;
 
   useEffect(() => {
+    const {powerSource, instantaneous} = renderData;
+    const {current} = instantaneous;
     const alarmCurrentA = Math.max(5, powerSource.ratedCurrentA - 15);
     setAlarmTriggered(current.rPhase > alarmCurrentA || current.tPhase > alarmCurrentA);
-  }, [powerSource, current]);
+  }, [renderData]);
 
   return (
     <>
       <div className="gauge_container">
         <AlarmSound triggered={isAlarmTriggered} />
-        <PieChart width={400} height={400}>
-          <defs>
-            <filter id="filter_0">
-              <feOffset dx="0" dy="3"></feOffset>
-              <feGaussianBlur result="offset-blur" stdDeviation="5"></feGaussianBlur>
-              <feComposite operator="out" in="SourceGraphic" in2="offset-blur" result="inverse"></feComposite>
-              <feFlood floodColor="black" floodOpacity="0.4" result="color"></feFlood>
-              <feComposite operator="in" in="color" in2="inverse" result="shadow"></feComposite>
-              <feComposite operator="over" in="shadow" in2="SourceGraphic"></feComposite>
-            </filter>
-          </defs>
-          {powerSource.wireCount === 3
-           ? renderThreeWire(powerSource, instantaneous)
-           : renderTwoWire(powerSource, instantaneous)}
-        </PieChart>
+        {powerSource.wireCount === 3
+            ? <ThreeWirePieChart {...pieChartData} />
+            : <TwoWirePieChart {...pieChartData} />}
 
-        <div className="numeric_meters">
-          <div className="numeric_meter">
-            <div className="title">Power Now</div>
-            <div className="value">
-              <NumericFormat
-                  value={power / 1000}
-                  displayType="text"
-                  thousandSeparator={true}
-                  decimalScale={2}
-                  allowLeadingZeros={true}
-              />
-              <span className="unit">kW</span>
-            </div>
-          </div>
-          <hr />
-          <div className="numeric_meter">
-            <div className="title">Current Now</div>
-            <div className="value">
-              <NumericFormat
-                  value={current.sum}
-                  displayType="text"
-                  thousandSeparator={true}
-              />
-              <span className="unit">A</span>
-            </div>
-          </div>
-        </div>
+        <CenterDisplay {...renderData} />
 
         <ProcessingLed
             ref={processingLedRef}
