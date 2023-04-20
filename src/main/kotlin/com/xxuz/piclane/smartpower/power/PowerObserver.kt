@@ -236,6 +236,7 @@ class PowerObserver(
                         power = newPower,
                         current = newCurrent,
                     )
+                    instantaneous.set(newInstantaneous)
                     firePropertyChangeEvent(PROPERTY_INSTANTANEOUS, oldInstantaneous, newInstantaneous)
                 }
             }
