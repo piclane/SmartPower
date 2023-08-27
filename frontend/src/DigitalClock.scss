@@ -1,0 +1,14 @@
+@font-face {
+  font-family: 'DSEG7Modern-BoldItalic';
+  src: url('../public/fonts/DSEG7Modern-BoldItalic.woff') format('woff'),
+  url('../public/fonts/DSEG7Modern-BoldItalic.woff2') format('woff2'),
+  url('../public/fonts/DSEG7Modern-BoldItalic.ttf') format('truetype');
+}
+
+.digital-clock {
+  font-family: 'DSEG7Modern-BoldItalic', sans-serif;
+
+  .ss {
+    font-size: 40%;
+  }
+}

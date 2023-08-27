@@ -3532,6 +3532,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/luxon@npm:^3.3.1":
+  version: 3.3.1
+  resolution: "@types/luxon@npm:3.3.1"
+  checksum: da8f6158edacae1430f3eca5f4ab4891200ffb34aa521ef6bae407a3c50b3854907098bc4535fb2a66a2779738f3c6c48fdfd86f01117a6f4844b18536cdb7c0
+  languageName: node
+  linkType: hard
+
 "@types/mime@npm:*":
   version: 3.0.1
   resolution: "@types/mime@npm:3.0.1"
@@ -10328,6 +10335,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"luxon@npm:^3.4.2":
+  version: 3.4.2
+  resolution: "luxon@npm:3.4.2"
+  checksum: efefdfaea90f4c8e502db8eb255385e6dac6733b6a9e1372eaf1a866cc1118363e235a3f6df505b837abc8bbcdfd8f0718a8de387b80cef9ee624d8791ca0844
+  languageName: node
+  linkType: hard
+
 "lz-string@npm:^1.4.4":
   version: 1.4.4
   resolution: "lz-string@npm:1.4.4"
@@ -13646,6 +13660,7 @@ __metadata:
     "@testing-library/react": ^13.4.0
     "@testing-library/user-event": ^13.5.0
     "@types/jest": ^27.5.2
+    "@types/luxon": ^3.3.1
     "@types/node": ^16.18.12
     "@types/react": ^18.0.28
     "@types/react-dom": ^18.0.11
@@ -13654,6 +13669,7 @@ __metadata:
     graphql-tag: ^2.12.6
     graphql-ws: ^5.11.3
     http-proxy-middleware: ^2.0.6
+    luxon: ^3.4.2
     material-ui-colors: ^1.0.0
     react: ^18.2.0
     react-dom: ^18.2.0
@@ -13663,6 +13679,7 @@ __metadata:
     recharts: ^2.4.3
     sass: ^1.58.3
     typescript: ^4.9.5
+    use-interval-hook: ^1.0.1
     web-vitals: ^2.1.4
   languageName: unknown
   linkType: soft
@@ -14636,11 +14653,11 @@ __metadata:
 
 "typescript@patch:typescript@^4.9.5#~builtin<compat/typescript>":
   version: 4.9.5
-  resolution: "typescript@patch:typescript@npm%3A4.9.5#~builtin<compat/typescript>::version=4.9.5&hash=23ec76"
+  resolution: "typescript@patch:typescript@npm%3A4.9.5#~builtin<compat/typescript>::version=4.9.5&hash=289587"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: ab417a2f398380c90a6cf5a5f74badd17866adf57f1165617d6a551f059c3ba0a3e4da0d147b3ac5681db9ac76a303c5876394b13b3de75fdd5b1eaa06181c9d
+  checksum: 1f8f3b6aaea19f0f67cba79057674ba580438a7db55057eb89cc06950483c5d632115c14077f6663ea76fd09fce3c190e6414bb98582ec80aa5a4eaf345d5b68
   languageName: node
   linkType: hard
 
@@ -14829,6 +14846,18 @@ __metadata:
   dependencies:
     braces: ^3.0.2
   checksum: 564fb223761b67ea76d015f11dfec145db98c71cc35641015d1c9ec164da494b1fab614e652a844e14a72cda31236b9c3a59b22fdcca71166c315ab059fab676
+  languageName: node
+  linkType: hard
+
+"use-interval-hook@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "use-interval-hook@npm:1.0.1"
+  dependencies:
+    react: ^18.2.0
+    react-dom: ^18.2.0
+  peerDependencies:
+    react: ^18.2.0
+  checksum: 1fdf7bd04a5f4bd1d687ea4c2d5770603e719ae2013a5b6ada306a11a0e2d0943215044299222154cb2642955f4ce44430fd59785bce51cb369a69a8c07ef300
   languageName: node
   linkType: hard
 
