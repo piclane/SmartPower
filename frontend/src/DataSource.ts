@@ -4,11 +4,11 @@ import {ApolloClient, HttpLink, InMemoryCache, split} from "@apollo/client";
 import {getMainDefinition} from "@apollo/client/utilities";
 
 const wsLink = new GraphQLWsLink(createClient({
-  url: `ws://${window.location.host}/graphql`,
+  url: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/graphql`,
 }));
 
 const httpLink = new HttpLink({
-  uri: `http://${window.location.host}/graphql`
+  uri: `${window.location.protocol}//${window.location.host}/graphql`
 });
 
 const splitLink = split(

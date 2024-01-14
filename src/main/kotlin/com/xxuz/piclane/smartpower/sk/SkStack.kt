@@ -395,9 +395,9 @@ class SkStack(private val device: String) {
         val cmd = "SKSENDTO $handle $ipaddr ${toUInt16(port)} ${toUInt8(sec.value)} ${toUInt16(dataBytes.size)} "
         val cmdBytes = cmd.toByteArray(StandardCharsets.US_ASCII)
         val crlfBytes = "\r\n".toByteArray(StandardCharsets.US_ASCII)
-        serialPort.writeBytes(cmdBytes, cmdBytes.size.toLong())
-        serialPort.writeBytes(dataBytes, dataBytes.size.toLong())
-        serialPort.writeBytes(crlfBytes, crlfBytes.size.toLong())
+        serialPort.writeBytes(cmdBytes, cmdBytes.size)
+        serialPort.writeBytes(dataBytes, dataBytes.size)
+        serialPort.writeBytes(crlfBytes, crlfBytes.size)
         while(true) {
             when(val event = readNextEvent()) {
                 is Ok -> return
