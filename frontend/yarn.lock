@@ -4957,6 +4957,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"boolean@npm:^3.1.4":
+  version: 3.2.0
+  resolution: "boolean@npm:3.2.0"
+  checksum: fb29535b8bf710ef45279677a86d14f5185d604557204abd2ca5fa3fb2a5c80e04d695c8dbf13ab269991977a79bb6c04b048220a6b2a3849853faa94f4a7d77
+  languageName: node
+  linkType: hard
+
 "brace-expansion@npm:^1.1.7":
   version: 1.1.11
   resolution: "brace-expansion@npm:1.1.11"
@@ -7478,6 +7485,15 @@ __metadata:
   version: 2.0.6
   resolution: "fast-levenshtein@npm:2.0.6"
   checksum: 92cfec0a8dfafd9c7a15fba8f2cc29cd0b62b85f056d99ce448bbcd9f708e18ab2764bda4dd5158364f4145a7c72788538994f0d1787b956ef0d1062b0f7c24c
+  languageName: node
+  linkType: hard
+
+"fast-printf@npm:^1.6.9":
+  version: 1.6.9
+  resolution: "fast-printf@npm:1.6.9"
+  dependencies:
+    boolean: ^3.1.4
+  checksum: 53e65b16d22bb0e33ce835f0ef076adbe6d68d89478f84deee50de4e6386bc5e5d5524f1e06cf4392847fc1a8c9144b1145dd9b1d53cfdc233e5164a10f61000
   languageName: node
   linkType: hard
 
@@ -13665,6 +13681,7 @@ __metadata:
     "@types/react": ^18.0.28
     "@types/react-dom": ^18.0.11
     craco-alias: ^3.0.1
+    fast-printf: ^1.6.9
     graphql: ^16.6.0
     graphql-tag: ^2.12.6
     graphql-ws: ^5.11.3

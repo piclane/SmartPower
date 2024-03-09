@@ -18,3 +18,20 @@
     background-color: #0edb23;
     box-shadow: inset -1px -1px 2px 2px rgb(0 0 0 / 50%);
 }
+
+.elapsed-time {
+    position: absolute;
+    top: 37px;
+    right: 15px;
+    transform: translateX(25%);
+    text-align: center;
+    font-family: DSEG7Modern-BoldItalic, sans-serif;
+    font-size: 12px;
+}
+
+.elapsed-time:after {
+    content: 's';
+    font-family: sans-serif;
+    font-size: 9px;
+    margin-left: 2px;
+}
