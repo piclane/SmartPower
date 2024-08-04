@@ -27,7 +27,7 @@ RUN ./gradlew clean
 RUN ./gradlew bootJar && \
     ./gradlew bootJar --info
 
-FROM public.ecr.aws/amazoncorretto/amazoncorretto:17.0.9-al2-native-headless
+FROM public.ecr.aws/amazoncorretto/amazoncorretto:17.0.9-al2-native-headless AS app
 
 RUN mkdir /app
 COPY --from=build /app/build/libs/*.jar /app
