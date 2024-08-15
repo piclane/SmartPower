@@ -1,17 +1,21 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.apache.tools.ant.taskdefs.condition.Os
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
-    id("org.springframework.boot") version "3.0.2"
-    id("io.spring.dependency-management") version "1.1.0"
-    kotlin("jvm") version "1.7.22"
-    kotlin("plugin.spring") version "1.7.22"
+    id("org.springframework.boot") version "3.3.2"
+    id("io.spring.dependency-management") version "1.1.6"
+    kotlin("jvm") version "2.0.10"
+    kotlin("plugin.spring") version "2.0.10"
 }
 
 group = "com.xxuz.piclane"
 version = "0.0.1"
-java.sourceCompatibility = JavaVersion.VERSION_17
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+}
 
 configurations {
     compileOnly {
@@ -64,7 +68,7 @@ tasks.register("buildFront") {
 
         ant.withGroovyBuilder {
             "mkdir"("dir" to "${webProjectDir}/build/")
-            "move"("todir" to "${buildDir}/resources/main/static/", "overwrite" to true) {
+            "move"("todir" to "${layout.buildDirectory.get()}/resources/main/static/", "overwrite" to true) {
                 "fileset"("dir" to "${webProjectDir}/build/")
             }
         }
@@ -85,12 +89,18 @@ tasks.withType<Jar> {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "17"
+    compilerOptions {
+        freeCompilerArgs.add("-Xjsr305=strict")
+        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.register("printVersion") {
+    doLast {
+        println(project.version)
+    }
 }
