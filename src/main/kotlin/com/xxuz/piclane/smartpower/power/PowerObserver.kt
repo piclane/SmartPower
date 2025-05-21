@@ -91,7 +91,11 @@ class PowerObserver(
         }
         val event = PropertyChangeEvent(this, propertyName, oldValue, newValue)
         propertyChangeListeners.forEach {
-            it.propertyChange(event)
+            try {
+                it.propertyChange(event)
+            } catch (e: Exception) {
+                logger.error("PropertyChangeListener.propertyChange failed.", e)
+            }
         }
     }
 
