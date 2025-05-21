@@ -1,5 +1,6 @@
 package com.xxuz.piclane.smartpower.power
 
+import com.xxuz.piclane.smartpower.model.Cumulative
 import com.xxuz.piclane.smartpower.model.Current
 import com.xxuz.piclane.smartpower.model.Instantaneous
 import com.xxuz.piclane.smartpower.sk.*
@@ -38,6 +39,9 @@ class PowerObserver(
 
         /** プロパティー名: 瞬時計測値 */
         const val PROPERTY_INSTANTANEOUS = "instantaneous"
+
+        /** プロパティー名: 積算計測値 */
+        const val PROPERTY_CUMULATIVE = "cumulative"
     }
 
     /** 通信スレッド */
@@ -49,6 +53,9 @@ class PowerObserver(
     /** 瞬時計測値 */
     private val instantaneous = AtomicReference(Instantaneous.ZERO)
 
+    /** 累積計測値 */
+    private val cumulative = AtomicReference<Cumulative>()
+
     /** PropertyChangeListener の配列 */
     private val propertyChangeListeners = CopyOnWriteArrayList<PropertyChangeListener>()
 
@@ -57,6 +64,9 @@ class PowerObserver(
 
     /** 瞬時計測値を取得します */
     fun getInstantaneous() = instantaneous.get()
+
+    /** 積算計測値を取得します */
+    fun getCumulative() = cumulative.get()
 
     /**
      * PropertyChangeListener を追加します
@@ -183,11 +193,12 @@ class PowerObserver(
             val defaultOp = listOf(
                 EchoNetLiteFrame.OP(epc = 0xE7), // 瞬時電力計測値
                 EchoNetLiteFrame.OP(epc = 0xE8), // 瞬時電流計測値
+
+                EchoNetLiteFrame.OP(epc = 0xE0), // 積算電力量計測値(正方向計測値)
+                EchoNetLiteFrame.OP(epc = 0xD3), // 係数
+                EchoNetLiteFrame.OP(epc = 0xE1), // 積算電力量単位
+                // EchoNetLiteFrame.OP(epc = 0xD7), // 積算電力量有効桁数
             )
-//            val integralOp = listOf(
-//                EchoNetLiteFrame.OP(epc = 0xE1), // 積算電力量単位
-//                EchoNetLiteFrame.OP(epc = 0xEA), // 定時積算電力量 (正方向)
-//            )
             val frame = EchoNetLiteFrame(
                 ehd1 = 0x10, // ECHONET Lite規格であることを示す (02-3.2.1.1)
                 ehd2 = 0x81, // 電文形式 1(規定電文形式)であることを示す (02-3.2.1.2)
@@ -214,8 +225,12 @@ class PowerObserver(
                 val rxEData = rxFrame.edata
                 if(rxEData.sEoj == eojDst && rxEData.esv == 0x72 /** プロパティ値読み出し応答 */) {
                     val oldInstantaneous = instantaneous.get()
+                    val oldCumulative = cumulative.get()
                     var newPower = oldInstantaneous.power
                     var newCurrent = oldInstantaneous.current
+                    var rawPositiveEnergy = 0L
+                    var coefficient = 0
+                    var energyUnit = 0
                     rxEData.op.forEach { op ->
                         val buf = op.toByteBuffer()
                         when(op.epc) {
@@ -230,16 +245,60 @@ class PowerObserver(
                                 )
                                 firePropertyChangeEvent(PROPERTY_INSTANTANEOUS_CURRENT, oldInstantaneous.current, newCurrent)
                             }
+                            0xE0 -> { // 積算電力量計測値(正方向計測値)
+                                val rawValue = buf.long
+                                rawPositiveEnergy = rawValue
+                            }
+                            0xD3 -> { // 係数（積算値に掛ける値）
+                                coefficient = buf.int
+                            }
+                            0xE1 -> { // 積算電力量単位
+                                energyUnit = buf.get().toInt() and 0xFF
+                            }
                         }
                     }
+                    // 瞬間値
                     val newInstantaneous = Instantaneous(
                         power = newPower,
                         current = newCurrent,
                     )
                     instantaneous.set(newInstantaneous)
                     firePropertyChangeEvent(PROPERTY_INSTANTANEOUS, oldInstantaneous, newInstantaneous)
+
+                    // 積算値
+                    val newCumulative = Cumulative(
+                        forwardEnergy = calculateActualEnergy(rawPositiveEnergy, coefficient, energyUnit)
+                    )
+                    cumulative.set(newCumulative)
+                    firePropertyChangeEvent(PROPERTY_CUMULATIVE, oldCumulative, newCumulative)
                 }
             }
+        }
+    }
+
+    /**
+     * 積算電力量を実際の値に変換する
+     * @param rawValue 生の積算電力量値
+     * @param coefficient 係数
+     * @param energyUnit 単位コード（0x00: 1kWh, 0x01: 0.1kWh, 0x02: 0.01kWh, 0x03: 0.001kWh, 0x04: 0.0001kWh等）
+     * @return 実際の積算電力量（kWh単位）
+     */
+    private fun calculateActualEnergy(rawValue: Long, coefficient: Int, energyUnit: Int): Double {
+        // 係数を適用
+        val valueWithCoefficient = rawValue * coefficient
+
+        // 単位による変換
+        return when (energyUnit) {
+            0x00 -> valueWithCoefficient.toDouble() // 1kWh
+            0x01 -> valueWithCoefficient.toDouble() * 0.1 // 0.1kWh
+            0x02 -> valueWithCoefficient.toDouble() * 0.01 // 0.01kWh
+            0x03 -> valueWithCoefficient.toDouble() * 0.001 // 0.001kWh
+            0x04 -> valueWithCoefficient.toDouble() * 0.0001 // 0.0001kWh
+            0x0A -> valueWithCoefficient.toDouble() * 10 // 10kWh
+            0x0B -> valueWithCoefficient.toDouble() * 100 // 100kWh
+            0x0C -> valueWithCoefficient.toDouble() * 1000 // 1000kWh
+            0x0D -> valueWithCoefficient.toDouble() * 10000 // 10000kWh
+            else -> valueWithCoefficient.toDouble() // デフォルトは変換なし
         }
     }
 
