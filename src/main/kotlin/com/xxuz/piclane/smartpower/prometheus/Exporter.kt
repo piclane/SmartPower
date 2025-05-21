@@ -26,7 +26,7 @@ class Exporter(
         .register(meterRegistry)
 
     private val handlePropertyChange = { evt: java.beans.PropertyChangeEvent ->
-        if (evt.propertyName != PowerObserver.PROPERTY_CUMULATIVE) {
+        if (evt.propertyName == PowerObserver.PROPERTY_CUMULATIVE) {
             val oldVal = evt.oldValue as Cumulative?
             val newVal = evt.newValue as Cumulative?
             if (oldVal != null && newVal != null) {
