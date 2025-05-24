@@ -233,7 +233,7 @@ class PowerObserver(
                     var newPower = oldInstantaneous.power
                     var newCurrent = oldInstantaneous.current
                     var rawPositiveEnergy = 0L
-                    var coefficient = 0
+                    var coefficient = 1L
                     var energyUnit = 0
                     rxEData.op.forEach { op ->
                         val buf = op.toByteBuffer()
@@ -250,11 +250,12 @@ class PowerObserver(
                                 firePropertyChangeEvent(PROPERTY_INSTANTANEOUS_CURRENT, oldInstantaneous.current, newCurrent)
                             }
                             0xE0 -> { // 積算電力量計測値(正方向計測値)
-                                val rawValue = buf.long
-                                rawPositiveEnergy = rawValue
+                                val rawValue = buf.int
+                                rawPositiveEnergy = rawValue.toLong() and 0xFFFFFFFFL
                             }
                             0xD3 -> { // 係数（積算値に掛ける値）
-                                coefficient = buf.int
+                                val rawValue = buf.int
+                                coefficient = rawValue.toLong() and 0xFFFFFFFFL
                             }
                             0xE1 -> { // 積算電力量単位
                                 energyUnit = buf.get().toInt() and 0xFF
@@ -287,7 +288,7 @@ class PowerObserver(
      * @param energyUnit 単位コード（0x00: 1kWh, 0x01: 0.1kWh, 0x02: 0.01kWh, 0x03: 0.001kWh, 0x04: 0.0001kWh等）
      * @return 実際の積算電力量（kWh単位）
      */
-    private fun calculateActualEnergy(rawValue: Long, coefficient: Int, energyUnit: Int): Double {
+    private fun calculateActualEnergy(rawValue: Long, coefficient: Long, energyUnit: Int): Double {
         // 係数を適用
         val valueWithCoefficient = rawValue * coefficient
 
