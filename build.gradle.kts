@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "com.xxuz.piclane"
-version = "1.3.0"
+version = "1.4.0"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -28,17 +28,17 @@ repositories {
 }
 
 dependencies {
-//    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-graphql")
-//    implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
     implementation("com.fazecast:jSerialComm:2.10.4")
     implementation("commons-codec:commons-codec:1.15")
+    implementation("io.micrometer:micrometer-registry-prometheus:1.14.2")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("com.mysql:mysql-connector-j")

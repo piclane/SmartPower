@@ -24,3 +24,8 @@ logging:
   level:
     com.xxuz.piclane.smartpower.sk: ${LOG_LEVEL_SK:info}
     org.apache.coyote.http11: warn
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, prometheus
