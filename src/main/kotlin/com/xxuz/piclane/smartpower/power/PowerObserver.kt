@@ -203,7 +203,7 @@ class PowerObserver(
                 EchoNetLiteFrame.OP(epc = 0xE1), // 積算電力量単位
                 // EchoNetLiteFrame.OP(epc = 0xD7), // 積算電力量有効桁数
             )
-            val frame = EchoNetLiteFrame(
+            val txFrame = EchoNetLiteFrame(
                 ehd1 = 0x10, // ECHONET Lite規格であることを示す (02-3.2.1.1)
                 ehd2 = 0x81, // 電文形式 1(規定電文形式)であることを示す (02-3.2.1.2)
                 tid = 1,
@@ -213,10 +213,14 @@ class PowerObserver(
                     esv = 0x62, // プロパティ値読み出し要求
                     op = defaultOp,
                 )
-            ).toByteArray()
+            )
+
+            if(logger.isDebugEnabled) {
+                logger.debug("> $txFrame")
+            }
 
             while(status.get() != Status.Stopping) {
-                sk.sendTo(1, ipAddr, 0x0E1A, SendToSecurity.ENCRYPT, frame)
+                sk.sendTo(1, ipAddr, 0x0E1A, SendToSecurity.ENCRYPT, txFrame.toByteArray())
                 val rx = try {
                     sk.waitForRxUdp(10000) { it.lPort == 0x0E1A }
                 } catch (e: SkTimeoutException) {
@@ -226,6 +230,9 @@ class PowerObserver(
                 }
 
                 val rxFrame = EchoNetLiteFrame.fromHex(rx.data)
+                if(logger.isDebugEnabled) {
+                    logger.debug("< $rxFrame")
+                }
                 val rxEData = rxFrame.edata
                 if(rxEData.sEoj == eojDst && rxEData.esv == 0x72 /** プロパティ値読み出し応答 */) {
                     val oldInstantaneous = instantaneous.get()

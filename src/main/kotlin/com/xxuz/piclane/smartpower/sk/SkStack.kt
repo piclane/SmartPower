@@ -123,7 +123,9 @@ class SkStack(private val device: String) {
                 continue
             }
 
-            logger.debug(line)
+            if(logger.isDebugEnabled) {
+                logger.debug("< $line")
+            }
             if (line[0] == 'S') {
                 continue
             }
@@ -391,6 +393,7 @@ class SkStack(private val device: String) {
      * @param sec 暗号化オプション
      * @param dataBytes 送信データ (バイナリ)
      */
+    @OptIn(ExperimentalStdlibApi::class)
     fun sendTo(handle: Int, ipaddr: IpAddr, port: Int, sec: SendToSecurity, dataBytes: ByteArray) {
         val cmd = "SKSENDTO $handle $ipaddr ${toUInt16(port)} ${toUInt8(sec.value)} ${toUInt16(dataBytes.size)} "
         val cmdBytes = cmd.toByteArray(StandardCharsets.US_ASCII)
@@ -398,6 +401,9 @@ class SkStack(private val device: String) {
         serialPort.writeBytes(cmdBytes, cmdBytes.size)
         serialPort.writeBytes(dataBytes, dataBytes.size)
         serialPort.writeBytes(crlfBytes, crlfBytes.size)
+        if(logger.isDebugEnabled) {
+            logger.debug("> $cmd ${dataBytes.toHexString()}")
+        }
         while(true) {
             when(val event = readNextEvent()) {
                 is Ok -> return
