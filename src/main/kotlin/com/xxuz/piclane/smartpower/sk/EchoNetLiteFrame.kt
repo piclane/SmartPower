@@ -6,7 +6,7 @@ import java.nio.ByteBuffer
 data class EchoNetLiteFrame(
     /** ECHONET Lite電文ヘッダー1 uint8 (02-3.2.1.1) */
     val ehd1: Int,
-    /** ECHONET Lite電文ヘッダー2 unit8 (02-3.2.1.2) */
+    /** ECHONET Lite電文ヘッダー2 uint8 (02-3.2.1.2) */
     val ehd2: Int,
     /** トランザクションID uint16 (02-3.2.2) */
     val tid: Int,
@@ -60,6 +60,18 @@ data class EchoNetLiteFrame(
             buf.put(opc.toByte())
             op.forEach { it.putInto(buf) }
         }
+
+        override fun toString(): String {
+            return buildString {
+                append("EDATA(")
+                append("sEoj=").append(sEoj).append(", ")
+                append("dEoj=").append(dEoj).append(", ")
+                append("esv=").append(esv.hex8()).append(", ")
+                append("opc=").append(opc.hex8()).append(", ")
+                append("op=").append(op.joinToString(prefix = "[", postfix = "]"))
+                append(")")
+            }
+        }
     }
 
     /**
@@ -94,6 +106,16 @@ data class EchoNetLiteFrame(
             buf.put(classGroupCode.toByte())
             buf.put(classCode.toByte())
             buf.put(instanceCode.toByte())
+        }
+
+        override fun toString(): String {
+            return buildString {
+                append("EOJ(")
+                append("classGroupCode=").append(classGroupCode.hex8()).append(", ")
+                append("classCode=").append(classCode.hex8()).append(", ")
+                append("instanceCode=").append(instanceCode.hex8())
+                append(")")
+            }
         }
     }
 
@@ -131,6 +153,17 @@ data class EchoNetLiteFrame(
             buf.put(pdc.toByte())
             buf.put(edt.toByteArray())
         }
+
+        override fun toString(): String {
+            val edtHex = edt.joinToString(prefix = "[", postfix = "]") { it.hex8() }
+            return buildString {
+                append("OP(")
+                append("epc=").append(epc.hex8()).append(", ")
+                append("pdc=").append(pdc.hex8()).append(", ")
+                append("edt=").append(edtHex)
+                append(")")
+            }
+        }
     }
 
     companion object {
@@ -162,4 +195,20 @@ data class EchoNetLiteFrame(
         buf.rewind()
         return buf.array()
     }
+
+    override fun toString(): String {
+        return buildString {
+            append("EchoNetLiteFrame(")
+            append("ehd1=").append(ehd1.hex8()).append(", ")
+            append("ehd2=").append(ehd2.hex8()).append(", ")
+            append("tid=").append(tid.hex16()).append(", ")
+            append("edata=").append(edata)
+            append(")")
+        }
+    }
 }
+
+// --- private helpers for hex formatting ---
+private fun Int.hex8(): String = "0x" + this.toString(16).uppercase().padStart(2, '0')
+private fun Int.hex16(): String = "0x" + this.toString(16).uppercase().padStart(4, '0')
+private fun Byte.hex8(): String = "0x" + ((this.toInt()) and 0xFF).toString(16).uppercase().padStart(2, '0')

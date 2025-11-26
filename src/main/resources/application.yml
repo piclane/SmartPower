@@ -23,6 +23,7 @@ server:
 logging:
   level:
     com.xxuz.piclane.smartpower.sk: ${LOG_LEVEL_SK:info}
+    com.xxuz.piclane.smartpower.power: ${LOG_LEVEL_POWER:info}
     org.apache.coyote.http11: warn
 management:
   endpoints:
