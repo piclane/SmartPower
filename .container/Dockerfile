@@ -1,38 +1,40 @@
-FROM public.ecr.aws/docker/library/node:18.19.0-bookworm-slim AS build
+FROM public.ecr.aws/debian/debian:bookworm-slim AS build
 
 # 必要なもののインストール
 RUN apt-get update && \
-    apt-get -y install wget java-common && \
+    apt-get -y install curl java-common unzip && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    corepack enable && \
-    corepack prepare yarn@stable --activate
+    rm -rf /var/lib/apt/lists/*
 
 # amazon corretto のインストール
 RUN if [ "$(arch)" = 'x86_64' ] ; then \
-      CORRETTO_URL='https://corretto.aws/downloads/resources/17.0.9.8.1/java-17-amazon-corretto-jdk_17.0.9.8-1_amd64.deb' ; \
+      CORRETTO_URL='https://corretto.aws/downloads/resources/21.0.9.11.1/java-21-amazon-corretto-jdk_21.0.9.11-1_amd64.deb' ; \
     elif [ "$(arch)" = 'arm64' ] || [ "$(arch)" = 'aarch64' ] ; then \
-      CORRETTO_URL='https://corretto.aws/downloads/resources/17.0.9.8.1/java-17-amazon-corretto-jdk_17.0.9.8-1_arm64.deb' ; \
+      CORRETTO_URL='https://corretto.aws/downloads/resources/21.0.9.11.1/java-21-amazon-corretto-jdk_21.0.9.11-1_arm64.deb' ; \
     fi ; \
     TEMP_DEB="$(mktemp)" && \
-    wget -O "$TEMP_DEB" "$CORRETTO_URL" && \
+    curl -SsL -o "$TEMP_DEB" "$CORRETTO_URL" && \
     dpkg --install "$TEMP_DEB" ; \
     rm -f "$TEMP_DEB"
 
+# fnm のインストール
+RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell --install-dir "/usr/local/bin"
+
 # ビルド
 COPY . /app
-ENV GRADLE_OPTS "-Dorg.gradle.daemon=false -Djdk.lang.Process.launchMechanism=vfork"
+WORKDIR /app/frontend
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+RUN fnm install --corepack-enabled
 WORKDIR /app
-RUN ./gradlew clean
-RUN ./gradlew bootJar && \
-    ./gradlew bootJar --info
+ENV GRADLE_OPTS "-Dorg.gradle.daemon=false -Djdk.lang.Process.launchMechanism=vfork"
+RUN eval "$(fnm env --shell bash)" && \
+    ./gradlew clean && \
+    ./gradlew bootJar
 
-FROM public.ecr.aws/amazoncorretto/amazoncorretto:17.0.9-al2-native-headless AS app
+FROM public.ecr.aws/amazoncorretto/amazoncorretto:21.0.9-al2023-headless AS app
 
 RUN mkdir /app
 COPY --from=build /app/build/libs/*.jar /app
-
-RUN yum install -y sudo shadow-utils prelink
 
 ## その他
 WORKDIR /app
