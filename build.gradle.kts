@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "com.xxuz.piclane"
-version = "1.4.1"
+version = "1.4.2"
 
 java {
     toolchain {
