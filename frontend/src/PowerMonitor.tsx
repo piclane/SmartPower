@@ -1,6 +1,6 @@
 import gql from "graphql-tag";
 import {useQuery, useSubscription} from "@apollo/client";
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useRef, useState, ComponentProps} from "react";
 import {amber, blue, deepOrange, orange} from 'material-ui-colors'
 import {Cell, Pie, PieChart} from "recharts";
 import './PowerMonitor.scss';
@@ -95,7 +95,7 @@ interface RendererProps {
   instantaneous: Instantaneous;
 }
 
-type PieChartProps = ConstructorParameters<typeof PieChart>[0];
+type PieChartProps = ComponentProps<typeof PieChart>;
 
 const BasePieChart = ({children, ...pcProps}: PieChartProps) => (
     <PieChart {...pcProps}>
