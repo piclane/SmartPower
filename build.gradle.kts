@@ -4,17 +4,19 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
-    id("org.springframework.boot") version "3.3.2"
-    id("io.spring.dependency-management") version "1.1.6"
-    kotlin("jvm") version "2.0.10"
-    kotlin("plugin.spring") version "2.0.10"
+    id("org.springframework.boot") version "3.5.8"
+    id("io.spring.dependency-management") version "1.1.7"
+    kotlin("jvm") version "2.2.21"
+    kotlin("plugin.spring") version "2.2.21"
 }
 
 group = "com.xxuz.piclane"
 version = "1.4.1"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
 }
 
 configurations {
@@ -58,7 +60,7 @@ tasks.register("buildFront") {
 
         project.exec {
             workingDir = webProjectDir
-            commandLine(yarnBin, "install", "--frozen-lockfile")
+            commandLine(yarnBin, "install", "--immutable")
         }
 
         project.exec {
@@ -67,16 +69,17 @@ tasks.register("buildFront") {
         }
 
         ant.withGroovyBuilder {
+            "delete"("dir" to "${projectDir}/src/main/resources/static/", "quiet" to true)
             "mkdir"("dir" to "${webProjectDir}/build/")
-            "move"("todir" to "${layout.buildDirectory.get()}/resources/main/static/", "overwrite" to true) {
+            "move"("todir" to "${projectDir}/src/main/resources/static/", "overwrite" to true) {
                 "fileset"("dir" to "${webProjectDir}/build/")
             }
         }
     }
 }
 
-tasks.withType<BootJar> {
-    dependsOn(tasks.getByName("buildFront"))
+tasks.withType<ProcessResources> {
+    dependsOn("buildFront")
 }
 
 tasks.withType<Jar> {
@@ -91,7 +94,7 @@ tasks.withType<Jar> {
 tasks.withType<KotlinCompile> {
     compilerOptions {
         freeCompilerArgs.add("-Xjsr305=strict")
-        jvmTarget.set(JvmTarget.JVM_17)
+        jvmTarget.set(JvmTarget.JVM_21)
     }
 }
 
