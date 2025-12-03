@@ -1,7 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     id("org.springframework.boot") version "3.5.8"
@@ -57,15 +56,15 @@ tasks.register("buildFront") {
         val webProjectDir = file("${projectDir}/frontend")
         val yarnBin = if(Os.isFamily(Os.FAMILY_WINDOWS)) "yarn.cmd" else "yarn"
 
-        project.exec {
-            workingDir = webProjectDir
+        providers.exec {
+            workingDir(webProjectDir)
             commandLine(yarnBin, "install", "--immutable")
-        }
+        }.result.get().assertNormalExitValue()
 
-        project.exec {
-            workingDir = webProjectDir
+        providers.exec {
+            workingDir(webProjectDir)
             commandLine(yarnBin, "build")
-        }
+        }.result.get().assertNormalExitValue()
 
         ant.withGroovyBuilder {
             "delete"("dir" to "${projectDir}/src/main/resources/static/", "quiet" to true)
