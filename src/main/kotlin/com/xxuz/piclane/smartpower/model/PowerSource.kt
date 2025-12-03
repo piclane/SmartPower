@@ -7,11 +7,11 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 data class PowerSource(
     /** 定格電流 (A) */
-    @Value("\${app.powerSource.ratedCurrentA}")
+    @param:Value("\${app.powerSource.ratedCurrentA}")
     val ratedCurrentA: Int,
 
     /** 線式 (2 or 3) */
-    @Value("\${app.powerSource.wireCount}")
+    @param:Value("\${app.powerSource.wireCount}")
     val wireCount: Int,
 ) {
     @PostConstruct

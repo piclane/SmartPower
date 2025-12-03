@@ -18,13 +18,13 @@ import java.util.concurrent.atomic.AtomicReference
 
 @Service
 class PowerObserver(
-    @Value("\${app.device.path}")
+    @param:Value("\${app.device.path}")
     private val devicePath: String,
 
-    @Value("\${app.device.password}")
+    @param:Value("\${app.device.password}")
     private val devicePassword: String,
 
-    @Value("\${app.device.rbid}")
+    @param:Value("\${app.device.rbid}")
     private val deviceRbid: String,
 ) {
     companion object {

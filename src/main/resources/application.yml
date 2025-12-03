@@ -7,16 +7,10 @@ app:
     ratedCurrentA: ${POWER_SOURCE_RATED_COUNT_A:60}
     wireCount: ${POWER_SOURCE_WIRE_COUNT:3}
 spring:
-#  datasource:
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_SCHEMA:sp}
-#    username: ${DB_USERNAME:root}
-#    password: ${DB_PASSWORD}
-#    hikari:
-#      auto-commit: false
   graphql:
-    path: /graphql
     websocket:
+      path: /graphql
+    http:
       path: /graphql
 server:
   port: ${PORT:8080}

@@ -3,19 +3,17 @@ import {createClient} from "graphql-ws";
 import {ApolloClient, HttpLink, InMemoryCache, split} from "@apollo/client";
 import {getMainDefinition} from "@apollo/client/utilities";
 
-// const wsLink = new GraphQLWsLink(createClient({
-//   url: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/graphql`,
-// }));
-//
-// const httpLink = new HttpLink({
-//   uri: `${window.location.protocol}//${window.location.host}/graphql`
-// });
-
 let activeSocket: any = null;
 let timedOut: any = null;
 
+const protocol = window.location.protocol;
+const host = window.location.host;
+const wsProtocol = protocol === 'https:' ? 'wss:' : 'ws:';
+const wsUrl = `${wsProtocol}//${host}/graphql`;
+const httpUrl = `${protocol}//${host}/graphql`;
+
 const wsLink = new GraphQLWsLink(createClient({
-  url: `wss://power-monitor.piclane.xxuz.com/graphql`,
+  url: wsUrl,
   retryAttempts: Infinity,
   shouldRetry: () => true,
   on: {
@@ -36,7 +34,7 @@ const wsLink = new GraphQLWsLink(createClient({
   }
 }));
 const httpLink = new HttpLink({
-  uri: `https://power-monitor.piclane.xxuz.com/graphql`
+  uri: httpUrl
 });
 
 const splitLink = split(

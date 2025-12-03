@@ -9,10 +9,10 @@ import org.springframework.stereotype.Controller
 
 @Controller
 class QueryResolver(
-    @Autowired
+    @param:Autowired
     private val observer: PowerObserver,
 
-    @Autowired
+    @param:Autowired
     private val powerSource: PowerSource
 ) {
     @QueryMapping

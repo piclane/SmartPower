@@ -1,7 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
     id("org.springframework.boot") version "3.5.8"
@@ -11,7 +10,7 @@ plugins {
 }
 
 group = "com.xxuz.piclane"
-version = "1.4.2"
+version = "1.4.3"
 
 java {
     toolchain {
@@ -43,7 +42,6 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus:1.14.2")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-    runtimeOnly("com.mysql:mysql-connector-j")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework:spring-webflux")
@@ -58,15 +56,15 @@ tasks.register("buildFront") {
         val webProjectDir = file("${projectDir}/frontend")
         val yarnBin = if(Os.isFamily(Os.FAMILY_WINDOWS)) "yarn.cmd" else "yarn"
 
-        project.exec {
-            workingDir = webProjectDir
+        providers.exec {
+            workingDir(webProjectDir)
             commandLine(yarnBin, "install", "--immutable")
-        }
+        }.result.get().assertNormalExitValue()
 
-        project.exec {
-            workingDir = webProjectDir
+        providers.exec {
+            workingDir(webProjectDir)
             commandLine(yarnBin, "build")
-        }
+        }.result.get().assertNormalExitValue()
 
         ant.withGroovyBuilder {
             "delete"("dir" to "${projectDir}/src/main/resources/static/", "quiet" to true)
