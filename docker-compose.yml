@@ -17,20 +17,5 @@ services:
       POWER_SOURCE_RATED_COUNT_A: 60
       POWER_SOURCE_WIRE_COUNT: 3
       LOG_LEVEL_SK: debug
+      LOG_LEVEL_POWER: debug
       TZ: Asia/Tokyo
-
-#  db:
-#    image: mysql:8.0.32-oracle
-#    restart: always
-#    environment:
-#      MYSQL_ROOT_PASSWORD: "password"
-#      TZ: Asia/Tokyo
-#    volumes:
-#      - mysql-tablespace:/var/lib/mysql
-#      - ./mysql/mysql_initdb.d/:/docker-entrypoint-initdb.d/
-#      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
-#    ports:
-#      - "3308:3306"
-#volumes:
-#  mysql-tablespace:
-#    driver: local
